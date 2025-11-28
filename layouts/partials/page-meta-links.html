@@ -12,7 +12,7 @@
 {{ $is_blog := eq .Section "blog" }}
 
 {{ if $github_repo }}
-  {{ $pathFormatted := replace .Path "\\" "/" }}
+  {{ $pathFormatted := replace .File.Path "\\" "/" }}
   {{ $gh_repo_path := $pathFormatted }}
   {{ if $github_subdir }}
     {{ $gh_repo_path = printf "%s/%s" $github_subdir $pathFormatted }}

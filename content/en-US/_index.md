@@ -3,13 +3,13 @@ title: BrightCom Product Docs
 ---
 
 {{< blocks/cover title="BrightCom Business Central Apps" image_anchor="top" height="full" >}}
-<a class="btn btn-lg btn-primary me-3 mb-4" href="/brc-connect/">
-  BRC Connect <i class="fas fa-arrow-alt-circle-right ms-2"></i>
+<a class="btn btn-lg btn-primary me-3 mb-4" href="/apps/">
+  Go To Docs <i class="fas fa-arrow-alt-circle-right ms-2"></i>
 </a>
 <a class="btn btn-lg btn-secondary me-3 mb-4" href="https://appsource.microsoft.com/sv-se/marketplace/apps?search=BrightCom&page=1">
-  AppSource <i class="fab fa-microsoft ms-2 "></i>
+  BrightCom on AppSource <i class="fab fa-microsoft ms-2 "></i>
 </a>
-<p class="lead mt-5">Documentation and support for all BrightCom Business Central solutions</p>
+<p class="lead mt-5">Browse all of our Business Central solutions</p>
 {{< blocks/link-down color="info" >}}
 {{< /blocks/cover >}}
 

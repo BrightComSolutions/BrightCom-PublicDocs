@@ -187,7 +187,7 @@ params:
     # Developer relevant links. These will show up on right side of footer.
     developer:
       - name: GitHub
-        url: https://github.com/BrightCom-Docs/BRC-Docs
+        url: https://github.com/BrightComSolutions/BrightCom-TestDocs
         icon: fab fa-github
         desc: Documentation source and issue tracking
 

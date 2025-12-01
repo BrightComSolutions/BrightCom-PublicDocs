@@ -68,6 +68,16 @@ Extended intercompany transaction capabilities.
 {{< /card >}}
 {{< /cardpane >}}
 
+### Risk & Compliance
+
+{{< cardpane >}}
+{{< card header="**BRC Risk**" title="Risk Management" >}}
+Comprehensive risk management and compliance solutions for Business Central.
+
+<br /><br /><a href="/brc-risk/" class="btn btn-primary">Learn More</a>
+{{< /card >}}
+{{< /cardpane >}}
+
 ### Integrations & Connectors
 
 {{< cardpane >}}

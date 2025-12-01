@@ -2,6 +2,19 @@
 Custom styles for BrightCom Docs
 */
 
+/* Typography overrides to match BrightCom brand */
+body {
+    font-family: "Overpass", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 300;
+    line-height: 1.4;
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+    font-family: "Poppins", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-weight: 300;
+}
+
 /* Fix main content positioning under fixed navbar */
 .td-main {
     padding-top: 70px;

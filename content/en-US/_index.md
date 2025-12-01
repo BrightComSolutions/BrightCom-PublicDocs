@@ -24,12 +24,12 @@ Find documentation, setup guides, and support resources for all BrightCom apps a
 Integration and connectivity solutions for Business Central.
 {{% /blocks/feature %}}
 
-{{% blocks/feature icon="fas fa-truck" title="BRC Logistics" url="/brc-logistics/" %}}
-Advanced logistics and warehouse management capabilities.
-{{% /blocks/feature %}}
-
 {{% blocks/feature icon="fas fa-cog" title="BRC Core" url="/brc-core/" %}}
 Core functionality and foundational features for Business Central.
+{{% /blocks/feature %}}
+
+{{% blocks/feature icon="fas fa-truck" title="BRC Logistics" url="/brc-logistics/" %}}
+Advanced logistics and warehouse management capabilities.
 {{% /blocks/feature %}}
 {{% /blocks/section %}}
 
@@ -38,26 +38,46 @@ Core functionality and foundational features for Business Central.
 Retail-specific features and point-of-sale integrations.
 {{% /blocks/feature %}}
 
-{{% blocks/feature icon="fas fa-gift" title="BRC Bonus" url="/brc-bonus/" %}}
-Bonus and incentive management solutions.
+{{% blocks/feature icon="fas fa-chart-line" title="BRC Extended Finance Management" url="/brc-extended-finance-management/" %}}
+Extended finance management capabilities for Business Central.
 {{% /blocks/feature %}}
 
-{{% blocks/feature icon="fas fa-shield-alt" title="BRC GDPR" url="/brc-gdpr/" %}}
-GDPR compliance tools and data protection features.
+{{% blocks/feature icon="fas fa-file-invoice" title="BRC Extended Order Management" url="/brc-extended-order-management/" %}}
+Extended order management and processing capabilities.
 {{% /blocks/feature %}}
 {{% /blocks/section %}}
 
 {{% blocks/section color="white" type="row" %}}
-{{% blocks/feature icon="fas fa-shipping-fast" title="BRC Drop Shipment" url="/brc-drop-shipment/" %}}
-Drop shipping and direct delivery management.
-{{% /blocks/feature %}}
-
 {{% blocks/feature icon="fas fa-exchange-alt" title="BRC Extended IC" url="/brc-extended-ic/" %}}
 Extended intercompany transaction capabilities.
 {{% /blocks/feature %}}
 
+{{% blocks/feature icon="fas fa-exclamation-triangle" title="BRC Risk" url="/brc-risk/" %}}
+Comprehensive risk management and compliance solutions for Business Central.
+{{% /blocks/feature %}}
+
 {{% blocks/feature icon="fas fa-credit-card" title="BRC Pleo" url="/brc-pleo/" %}}
 Pleo expense management integration.
+{{% /blocks/feature %}}
+{{% /blocks/section %}}
+
+{{% blocks/section color="light" type="row" %}}
+{{% blocks/feature icon="fas fa-chart-bar" title="Madden Analytics Connect" url="/madden-analytics-connect/" %}}
+Madden Analytics integration for advanced reporting.
+{{% /blocks/feature %}}
+
+{{% blocks/feature icon="fas fa-shipping-fast" title="nShift Connect" url="/nshift-connect/" %}}
+nShift shipping and delivery management integration.
+{{% /blocks/feature %}}
+
+{{% blocks/feature icon="fas fa-box" title="PostNord Freight Integration" url="/postnord-freight-integration/" %}}
+PostNord freight and shipping integration.
+{{% /blocks/feature %}}
+{{% /blocks/section %}}
+
+{{% blocks/section color="white" type="row" %}}
+{{% blocks/feature icon="fas fa-money-check-alt" title="PS Inkasso Connect" url="/ps-inkasso-connect/" %}}
+PS Inkasso debt collection integration.
 {{% /blocks/feature %}}
 {{% /blocks/section %}}
 

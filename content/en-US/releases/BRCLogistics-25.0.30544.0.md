@@ -1,5 +1,5 @@
 ---
-title: BRC Logistics 19.4.30544.0
+title: BRC Logistics 25.0.30544.0
 categories: [BRC Logistics, ReleaseNotes]
 description: Sello integration pagination enhancement and tracking link rollback
 date: 2026-04-08

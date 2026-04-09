@@ -1,5 +1,5 @@
 ---
-title: BRC Extended Finance Management 21.0.30541.0
+title: BRC Extended Finance Management 26.0.30541.0
 categories: [BRC Extended Finance Management, ReleaseNotes]
 description: EU Sales Export report data accuracy fix
 date: 2026-04-08

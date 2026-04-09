@@ -1,5 +1,5 @@
 ---
-title: BRC Extended Order Management 21.0.30540.0
+title: BRC Extended Order Management 25.0.30540.0
 categories: [BRC Extended Order Management, ReleaseNotes]
 description: Back Order Management extended to Transfer Orders
 date: 2026-04-08

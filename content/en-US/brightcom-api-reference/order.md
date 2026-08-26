@@ -3,175 +3,212 @@ title: "Order"
 linkTitle: "Order"
 weight: 40
 description: >
-  Sales order headers and lines, plus BRC Connect's shipping, cancellation, and status fields.
+  Sales orders, closed invoices, and credit memos, with lines, buyer/payer/ship-to, payments, and delivery.
 ---
 
-This resource is Business Central's Sales Header/Sales Line, filtered to `Document Type = Order`. Creating a new order always forces the document type to Order — you can't use these endpoints to create a quote or invoice.
+An order message serves three purposes, distinguished by `documentType`:
 
-## Sales order
+- **`order`** (default) — a sales order. Normally generates a sales order in the ERP; also used by the ERP to send order status back to the source system.
+- **`invoice`** — an order that's already closed and shipped, such as a receipt from a point-of-sale system.
+- **`credit memo`** — a credit memo that's already closed.
 
-{{< apimethod method="GET" path="/api/brightcom/brccore/v1.0/companies({id})/salesOrders" >}}
-{{< apimethod method="POST" path="/api/brightcom/brccore/v1.0/companies({id})/salesOrders" >}}
-{{< apimethod method="PATCH" path="/api/brightcom/brccore/v1.0/companies({id})/salesOrders({id})" >}}
+### Required fields for a successful order
+
+`source` (origin — use your tenant code unless told otherwise), `orderDate`, `externalId`, `primaryWarehouseId` (optional), `buyer` (with at least an invoicing address including a country code), `shipTo` (optional; set `shipToAddresses` to one element on it), `payments` (at least a code and amount, multiple allowed), `currency` (optional), `totalAmount`, `totalExclVat`, `totalVat`, `totalFreight` (required if there's no line for shipping), `totalFreightVat`.
+
+Line requirements: `partNo`, `variantCode` (optional), `quantity` (positive for an order, negative for a credit memo), `pricePerItem`, `vatPerItem`, `discountAmount`, `discountAmountVat`, `name` (recommended), `id` (a globally unique identifier for the line), `lineNumber` (optional — recommend 10000/20000/30000 to match BC's own numbering).
+
+## Add an order to the queue
+
+{{< apimethod method="POST" path="/order" >}}
+
+Accepts **either** a single order object or a JSON array — the request body is sniffed for a leading `[`. An explicit batch route also exists at `POST /order/orders` (identical `List` body) if you'd rather always send arrays.
 
 {{< apicols >}}
 {{< apicol side="left" >}}
-| Field | BC field | Notes |
+| Field | Type | Notes |
 |---|---|---|
-| `id` | `SystemId` | read-only |
-| `number` | `No.` | |
-| `orderDate` | `Order Date` | |
-| `documentDate` | `Document Date` | |
-| `customerNumber` | `Sell-to Customer No.` | |
-| `customerName` | `Sell-to Customer Name` | |
-| `billToCustomerNumber` | `Bill-to Customer No.` | |
-| `sellToAddressLine1` | `Sell-to Address` | |
-| `sellToAddressLine2` | `Sell-to Address 2` | |
-| `city` | `Sell-to City` | |
-| `postalCode` | `Sell-to Post Code` | |
-| `countryRegionCode` | `Sell-to Country/Region Code` | |
-| `shipToCode` | `Ship-to Code` | |
-| `shipToName` | `Ship-to Name` | |
-| `shipToAddressLine1` | `Ship-to Address` | |
-| `shipToAddressLine2` | `Ship-to Address 2` | |
-| `salespersonCode` | `Salesperson Code` | |
-| `currencyCode` | `Currency Code` | |
-| `paymentTermsCode` | `Payment Terms Code` | |
-| `paymentMethodCode` | `Payment Method Code` | |
-| `shipmentMethodCode` | `Shipment Method Code` | |
-| `locationCode` | `Location Code` | |
-| `externalDocumentNumber` | `External Document No.` | |
-| `requestedDeliveryDate` | `Requested Delivery Date` | |
-| `promisedDeliveryDate` | `Promised Delivery Date` | |
-| `status` | `Status` | **read-only**, option |
-| `lastModifiedDateTime` | `SystemModifiedAt` | read-only |
+| `id` | string (GUID) | |
+| `externalId` | string | |
+| `documentNumber` | string | |
+| `documentStatus` | string | |
+| `customerReference` | string | |
+| `documentType` | string | `order` (default) / `invoice` / `credit memo` |
+| `relatedExternalId` | string | |
+| `orderDate` | datetime | |
+| `deliveryDate` | datetime | |
+| `externalReference` | string | |
+| `source` | string | |
+| `created` | datetime | |
+| `primaryWarehouseId` | string | |
+| `buyer` | object | [Customer](../customer/) shape |
+| `payer` | object | [Customer](../customer/) shape |
+| `shipTo` | object | [Customer](../customer/) shape |
+| `seller` | object | [Customer](../customer/) shape |
+| `deliveryMethod` | object | See [Delivery method](#delivery-method) below |
+| `payments` | array of object | See [Payment](#payment) below |
+| `items` | array | Full [Item](../item/) objects, when included |
+| `lines` | array of object | See [Order line](#order-line) below |
+| `currency` | string | |
+| `comment` | string | |
+| `totalAmount` | number | |
+| `totalExclVat` | number | |
+| `totalVat` | number | |
+| `totalFreight` | number | |
+| `totalFreightVat` | number | |
+| `freightDiscount` | number | |
+| `freightDiscountVat` | number | |
+| `discountPct` | number | |
+| `discountAmount` | number | |
+| `centRounding` | number | |
+| `discountCode` | string | |
+| `extendedInfo` | array | See [Extended Info](../extended-info/) |
+| `checksum` | string | |
+| `freight` | number | |
+| `freightVat` | number | |
+| `deductedTax` | number | |
+| `hasDeductedTax` | boolean | |
+| `duties` | number | |
+| `dutiesVat` | number | |
+| `fees` | number | |
+| `feesVat` | number | |
 {{< /apicol >}}
 {{< apicol side="right" >}}
 #### Request
 
 ```json
 {
-  "customerNumber": "20000",
-  "externalDocumentNumber": "SHOP-100245",
-  "shipToName": "Anna Karlsson",
-  "shipToAddressLine1": "Storgatan 4",
-  "requestedDeliveryDate": "2026-09-01"
+  "externalId": "SHOP-100245",
+  "documentType": "order",
+  "source": "example-shop",
+  "orderDate": "2026-08-25T00:00:00Z",
+  "primaryWarehouseId": "MAIN",
+  "buyer": {
+    "firstName": "Anna",
+    "lastName": "Karlsson",
+    "email": "anna.karlsson@example.com",
+    "invoicingAddress": {
+      "address1": "Storgatan 4",
+      "city": "Göteborg",
+      "zip": "411 03",
+      "country": "SE"
+    }
+  },
+  "payments": [
+    { "code": "CARD", "amount": 2495.00 }
+  ],
+  "currency": "SEK",
+  "totalAmount": 2495.00,
+  "totalExclVat": 1996.00,
+  "totalVat": 499.00,
+  "totalFreight": 0,
+  "totalFreightVat": 0,
+  "lines": [
+    {
+      "id": "d3a7e2c4-b5f4-4a10-8c2e-1f6a3b9d5e77",
+      "lineNumber": 10000,
+      "partNo": "10023",
+      "variantCode": "050-ONE",
+      "name": "Outdoor Scarf",
+      "quantity": 1,
+      "pricePerItem": 1996.00,
+      "vatPerItem": 499.00
+    }
+  ],
+  "extendedInfo": []
 }
 ```
 
 #### Response
 
-```json
-{
-  "id": "9d3a7e2c-4b5f-4a10-8c2e-1f6a3b9d5e77",
-  "number": "SO-104502",
-  "orderDate": "2026-08-25",
-  "documentDate": "2026-08-25",
-  "customerNumber": "20000",
-  "customerName": "Anna Karlsson",
-  "billToCustomerNumber": "20000",
-  "sellToAddressLine1": "Storgatan 4",
-  "sellToAddressLine2": "",
-  "city": "Göteborg",
-  "postalCode": "411 03",
-  "countryRegionCode": "SE",
-  "shipToCode": "",
-  "shipToName": "Anna Karlsson",
-  "shipToAddressLine1": "Storgatan 4",
-  "shipToAddressLine2": "",
-  "salespersonCode": "WEB",
-  "currencyCode": "SEK",
-  "paymentTermsCode": "14 DAGAR",
-  "paymentMethodCode": "CARD",
-  "shipmentMethodCode": "POSTNORD",
-  "locationCode": "MAIN",
-  "externalDocumentNumber": "SHOP-100245",
-  "requestedDeliveryDate": "2026-09-01",
-  "promisedDeliveryDate": "2026-09-01",
-  "status": "Open",
-  "lastModifiedDateTime": "2026-08-25T13:22:09Z"
-}
+```
+201 Created
+"1 order(s) queued"
 ```
 {{< /apicol >}}
 {{< /apicols >}}
 
-## Sales order line
+### Order line
 
-Nested under `salesOrders` as `salesOrderLines`, and also reachable as its own top-level endpoint.
-
-{{< apimethod method="GET" path="/api/brightcom/brccore/v1.0/companies({id})/salesOrderLines" >}}
-
-| Field | BC field | Notes |
+| Field | Type | Notes |
 |---|---|---|
-| `id` | `SystemId` | read-only |
-| `documentId` | — | derived by looking up the parent order; not stored |
-| `documentNumber` | `Document No.` | |
-| `lineNumber` | `Line No.` | |
-| `lineType` | `Type` | option — Item / Resource / G/L Account / etc. |
-| `itemNumber` | `No.` | |
-| `itemVariantCode` | `Variant Code` | |
-| `description` | `Description` | |
-| `description2` | `Description 2` | |
-| `unitOfMeasureCode` | `Unit of Measure Code` | |
-| `quantity` | `Quantity` | |
-| `quantityShipped` | `Quantity Shipped` | **read-only** |
-| `quantityInvoiced` | `Quantity Invoiced` | **read-only** |
-| `quantityOutstanding` | `Outstanding Quantity` | **read-only** |
-| `unitPrice` | `Unit Price` | |
-| `lineDiscountPercent` | `Line Discount %` | |
-| `lineDiscountAmount` | `Line Discount Amount` | |
-| `lineAmount` | `Line Amount` | |
-| `vatPercent` | `VAT %` | |
-| `shipmentDate` | `Shipment Date` | |
-| `locationCode` | `Location Code` | |
-| `lastModifiedDateTime` | `SystemModifiedAt` | read-only |
+| `id` | string (GUID) | Globally unique identifier for the line |
+| `externalId` | string | |
+| `lineNumber` | number | Recommend 10000/20000/30000 to match BC |
+| `parentLineNumber` | number | |
+| `partNo` | string | |
+| `name` | string | |
+| `warehouseCode` | string | |
+| `quantity` | number | Positive for an order, negative for a credit memo |
+| `pricePerItem` | number | Before discount, excl. VAT |
+| `vatPerItem` | number | |
+| `discountPct` | number | |
+| `discountAmount` | number | Excl. VAT, for the whole line |
+| `discountAmountVat` | number | VAT portion of the line discount |
+| `checksum` | string | |
+| `variantCode` | string | |
+| `unitOfMeasure` | string | |
+| `totalLineAmount` | number | |
+| `dropShipment` | boolean | |
+| `extendedInfo` | array | See [Extended Info](../extended-info/) — Order is one of the resources where it appears at both header and line level |
+| `shippedQuantity` | number | |
+| `invoicedQuantity` | number | |
 
-## BRC Connect extension fields
+### Delivery method
 
-Separate endpoint, joined to `salesOrders` above by `id`. All fields here are writable. There is no Connect extension endpoint for order lines.
+| Field | Type |
+|---|---|
+| `id` | string (GUID) |
+| `externalId` | string |
+| `code` | string |
+| `agentId` | string |
+| `extendedInfo` | array |
+| `checksum` | string |
+| `price` | number |
+| `vat` | number |
 
-{{< apimethod method="GET" path="/api/brightcom/brcconnect/v1.0/companies({id})/salesOrders" >}}
-{{< apimethod method="PATCH" path="/api/brightcom/brcconnect/v1.0/companies({id})/salesOrders({id})" >}}
+Use `code` and `externalId`, and build a transformation table in BC unless you have both the shipping agent and service code.
 
-{{< apicols >}}
-{{< apicol side="left" >}}
-| Field | BC field | Notes |
-|---|---|---|
-| `id` | `SystemId` | read-only, same value as the Core order's `id` |
-| `brcConExternalDocumentNumber` | `BRC External Document No.` | a **separate** field from Core's `externalDocumentNumber` |
-| `brcConSource` | `BRC Source` | |
-| `brcConMarkForCancel` | `BRC Mark For Cancel` | boolean |
-| `brcConShippingExtra1` | `BRC Shipping Extra 1` | |
-| `brcConShippingExtra2` | `BRC Shipping Extra 2` | |
-| `brcConShippingExtra3` | `BRC Shipping Extra 3` | |
-| `brcConOrderComment` | `BRC Con Order Comment` | |
-| `brcConStatus` | `BRC Con Status` | a Connect-specific status, distinct from Core's `status` |
-| `lastModifiedDateTime` | `SystemModifiedAt` | read-only |
-{{< /apicol >}}
-{{< apicol side="right" >}}
-#### Response
+### Payment
+
+| Field | Type |
+|---|---|
+| `id` | string (GUID) |
+| `externalId` | string |
+| `code` | string |
+| `paymentReference` | string |
+| `amount` | number |
+| `extendedInfo` | array |
+| `checksum` | string |
+
+You may specify multiple payments — e.g. to distinguish a payment from a discount. BC places one payment method on the order header but represents multiple payments as order lines. Use `code` and `externalId` for routing, and `paymentReference` if you need it to surface as the external document number.
+
+## Retrieve orders from the queue
+
+{{< apimethod method="GET" path="/order" >}}
+
+| Query parameter | Notes |
+|---|---|
+| `count` | Number of entries to retrieve. Default 100 if omitted. |
+| `acknowledge` | The `acknowledgeToken` from your previous batch — pass it to close that batch and advance the queue. |
 
 ```json
 {
-  "id": "9d3a7e2c-4b5f-4a10-8c2e-1f6a3b9d5e77",
-  "brcConExternalDocumentNumber": "SHOP-100245",
-  "brcConSource": "SHOPIFY",
-  "brcConMarkForCancel": false,
-  "brcConShippingExtra1": "Leave at door",
-  "brcConShippingExtra2": "",
-  "brcConShippingExtra3": "",
-  "brcConOrderComment": "Gift wrap requested",
-  "brcConStatus": "SYNCED",
-  "lastModifiedDateTime": "2026-08-25T13:22:09Z"
+  "count": 1,
+  "acknowledgeToken": "9d3a7e2c-4b5f-4a10-8c2e-1f6a3b9d5e77",
+  "nextLink": "/order?acknowledge=9d3a7e2c-4b5f-4a10-8c2e-1f6a3b9d5e77",
+  "data": [
+    {
+      "externalId": "SHOP-100245",
+      "documentNumber": "SO-104502",
+      "documentType": "order",
+      "documentStatus": "Open",
+      "extendedInfo": []
+    }
+  ]
 }
 ```
-{{< /apicol >}}
-{{< /apicols >}}
 
-{{% alert title="Two similarly-named fields" color="warning" %}}
-`externalDocumentNumber` (Core) and `brcConExternalDocumentNumber` (Connect) are two different underlying BC fields on the same order — don't assume they're kept in sync automatically. Check with BrightCom Solutions which one your integration should read and write.
+{{% alert title="A GET /order/orders also exists — don't use it" color="warning" %}}
+There's also a `GET /order/orders` route that just redirects to the same result as `GET /order` above. It's hidden from the published API spec and marked in the Gateway's own source as unexplained leftover ("Todo: why do we have this redirect?"). Use `GET /order`.
 {{% /alert %}}
-
-## Extended Info
-
-Order messages also carry `extendedInfo`, at both header and line level — and it works inbound too: your integration can send its own `extendedInfo` codes when creating an order. See the dedicated [Extended Info](extended-info/) page for the full explanation, field reference, and supported data types.

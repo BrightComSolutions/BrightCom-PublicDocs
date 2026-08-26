@@ -3,198 +3,122 @@ title: "Item"
 linkTitle: "Item"
 weight: 10
 description: >
-  Item master data, variants, units of measure, and cross-references (EAN/GTIN), plus BRC Connect's brand and web-enablement fields.
+  Item, variant, and parent-grouping messages — non-variant items, BC-level variants, and virtual parent groupings.
 ---
 
-The Item resource covers standard item master data from BRC Core, plus three nested sub-resources (variants, units of measure, and cross-references) and BRC Connect's own extension fields on a separate endpoint.
+An item message can represent one of three shapes, distinguished by `class`:
 
-## Item
+- **Non-Variant Item (`nonVariantItem`)** — has no variations, sold as-is.
+- **Item with Variants (`itemWithVariants`)** — has variants in BC, sold at the variant level.
+- **Item with Parent (`itemWithParent`)** — structurally an item in BC (like a non-variant item), but has a virtual parent that doesn't exist as an item in BC. Used to let external systems group these as if they were variants of a common parent.
 
-{{< apimethod method="GET" path="/api/brightcom/brccore/v1.0/companies({id})/items" >}}
-{{< apimethod method="PATCH" path="/api/brightcom/brccore/v1.0/companies({id})/items({id})" >}}
+### Queue semantics
+
+If an item with the same identifier already exists in the queue, the new entry is added at the back as a copy, not merged in place. If the queue holds two or more copies of the same identifier with byte-wise identical content, they're deduplicated on retrieval; copies that differ are delivered in FIFO order. Posted items are filtered and transformed against the configured targets before delivery — an item can be culled entirely if it doesn't match a target's filters.
+
+## Add items to the queue
+
+{{< apimethod method="POST" path="/item" >}}
+
+Accepts a JSON array of item entries.
 
 {{< apicols >}}
 {{< apicol side="left" >}}
-| Field | BC field | Notes |
+| Field | Type | Notes |
 |---|---|---|
-| `id` | `SystemId` | read-only |
-| `number` | `No.` | |
-| `displayName` | `Description` | |
-| `displayName2` | `Description 2` | |
-| `type` | `Type` | option |
-| `blocked` | `Blocked` | boolean |
-| `itemCategoryCode` | `Item Category Code` | |
-| `baseUnitOfMeasure` | `Base Unit of Measure` | |
-| `salesUnitOfMeasure` | `Sales Unit of Measure` | |
-| `purchUnitOfMeasure` | `Purch. Unit of Measure` | |
-| `unitCost` | `Unit Cost` | |
-| `unitPrice` | `Unit Price` | |
-| `lastDirectCost` | `Last Direct Cost` | |
-| `standardCost` | `Standard Cost` | |
-| `priceProfitCalculation` | `Price/Profit Calculation` | option |
-| `grossWeight` | `Gross Weight` | |
-| `netWeight` | `Net Weight` | |
-| `unitsPerParcel` | `Units per Parcel` | |
-| `unitVolume` | `Unit Volume` | |
-| `inventoryPostingGroup` | `Inventory Posting Group` | |
-| `genProdPostingGroup` | `Gen. Prod. Posting Group` | |
-| `vatProdPostingGroup` | `VAT Prod. Posting Group` | |
-| `countryRegionOfOriginCode` | `Country/Region of Origin Code` | |
-| `tariffNo` | `Tariff No.` | |
-| `statisticGroup` | `Statistics Group` | |
-| `itemTrackingCode` | `Item Tracking Code` | |
-| `serialNos` | `Serial Nos.` | |
-| `lotNos` | `Lot Nos.` | |
-| `vendorNo` | `Vendor No.` | |
-| `vendorItemNo` | `Vendor Item No.` | |
-| `leadTimeCalculation` | `Lead Time Calculation` | returned as formatted text; write support unconfirmed |
-| `reorderingPolicy` | `Reordering Policy` | option |
-| `lastModifiedDateTime` | `SystemModifiedAt` | read-only |
+| `id` | string (GUID) | |
+| `externalId` | string | Your system's identifier for this item |
+| `class` | string | `unclassified` / `nonVariantItem` / `itemWithVariants` / `itemWithParent` / `hasBom` |
+| `parentPartNo` | string | For `itemWithParent` |
+| `parentName` | string | |
+| `partNo` | string | The item number |
+| `source` | string | Origin of the message |
+| `name` | string | |
+| `description` | string | |
+| `unitOfMeasure` | string | |
+| `categoryCode` | string | |
+| `itemType` | string | |
+| `vatType` | string | |
+| `unspscCode` | string | |
+| `countryOfOrigin` | string | |
+| `structure` | array | Bill-of-materials structure lines — not yet expanded field-by-field in this reference |
+| `variants` | array | Variant entries — not yet expanded field-by-field in this reference |
+| `crossReferences` | array | EAN/GTIN and other cross-references — not yet expanded field-by-field in this reference |
+| `extendedInfo` | array | See [Extended Info](../extended-info/) |
+| `productRanges` | array | Channel/assortment flags — code, channel, status, start/end date |
+| `grossWeight` | number | |
+| `netWeight` | number | |
+| `dangerousGoods` | boolean | |
+| `dropShipment` | boolean | |
+| `checksum` | string | |
+| `commodityCode` | string | |
+| `status` | string | |
+| `nameLocale` | object | Language code → localized name |
+| `descriptionLocale` | object | Language code → localized description |
+| `variantAttributes` | array of string | e.g. which attributes distinguish variants (`["Color", "Size"]`) |
+| `brand` | string | |
+| `mpn` | string | Manufacturer part number |
+| `imageUrl` | string | |
+| `suppliers` | array | Not yet expanded field-by-field in this reference |
+| `units` | array | Not yet expanded field-by-field in this reference |
 {{< /apicol >}}
 {{< apicol side="right" >}}
 #### Request
 
 ```json
-{
-  "displayName": "Mountain Bike, Alpine 27\"",
-  "unitPrice": 2495.00,
-  "blocked": false
-}
+[
+  {
+    "externalId": "10023",
+    "class": "itemWithVariants",
+    "partNo": "10023",
+    "source": "example-pim",
+    "name": "Outdoor Scarf",
+    "brand": "EXAMPLE",
+    "status": "Published",
+    "variantAttributes": ["Color", "Size"],
+    "imageUrl": "https://assets.example.com/10023/main.png",
+    "extendedInfo": [
+      { "code": "SeasonId", "valueType": "string", "stringValue": "2608", "value": "2608", "checksum": "", "id": "f55f8c70-26a3-4e72-abda-f5fc54241752" }
+    ]
+  }
+]
 ```
 
 #### Response
 
-```json
-{
-  "id": "8f14e45f-ceea-467e-b3b3-6b1e2e6e4a0a",
-  "number": "1000",
-  "displayName": "Mountain Bike, Alpine 27\"",
-  "displayName2": "",
-  "type": "Inventory",
-  "blocked": false,
-  "itemCategoryCode": "BIKES",
-  "baseUnitOfMeasure": "PCS",
-  "salesUnitOfMeasure": "PCS",
-  "purchUnitOfMeasure": "PCS",
-  "unitCost": 1450.00,
-  "unitPrice": 2495.00,
-  "lastDirectCost": 1450.00,
-  "standardCost": 1450.00,
-  "priceProfitCalculation": "Profit=Price-Cost",
-  "grossWeight": 14.2,
-  "netWeight": 13.5,
-  "unitsPerParcel": 1,
-  "unitVolume": 0.18,
-  "inventoryPostingGroup": "RETAIL",
-  "genProdPostingGroup": "RETAIL",
-  "vatProdPostingGroup": "VAT25",
-  "countryRegionOfOriginCode": "SE",
-  "tariffNo": "",
-  "statisticGroup": "1",
-  "itemTrackingCode": "",
-  "serialNos": "",
-  "lotNos": "",
-  "vendorNo": "40000",
-  "vendorItemNo": "ALP-27-BLK",
-  "leadTimeCalculation": "2W",
-  "reorderingPolicy": "Fixed Reorder Qty.",
-  "lastModifiedDateTime": "2026-08-20T09:12:31Z"
-}
+```
+201 Created
+"1 item(s) queued"
 ```
 {{< /apicol >}}
 {{< /apicols >}}
 
-### Item variants
+## Retrieve items from the queue
 
-Nested under `items` as `itemVariants`, and also reachable as its own top-level endpoint.
+{{< apimethod method="GET" path="/item" >}}
 
-{{< apimethod method="GET" path="/api/brightcom/brccore/v1.0/companies({id})/itemVariants" >}}
-
-| Field | BC field | Notes |
-|---|---|---|
-| `id` | `SystemId` | read-only |
-| `itemId` | — | derived at read time by looking up the parent item; not stored |
-| `itemNumber` | `Item No.` | |
-| `code` | `Code` | |
-| `description` | `Description` | |
-| `description2` | `Description 2` | |
-| `blocked` | `Blocked` | boolean |
-| `lastModifiedDateTime` | `SystemModifiedAt` | read-only |
-
-### Item units of measure
-
-{{< apimethod method="GET" path="/api/brightcom/brccore/v1.0/companies({id})/itemUnitsOfMeasure" >}}
-
-| Field | BC field | Notes |
-|---|---|---|
-| `id` | `SystemId` | read-only |
-| `itemId` | — | derived, not stored |
-| `itemNumber` | `Item No.` | |
-| `code` | `Code` | |
-| `quantity` | `Qty. per Unit of Measure` | |
-| `length` | `Length` | |
-| `width` | `Width` | |
-| `height` | `Height` | |
-| `cubage` | `Cubage` | |
-| `weight` | `Weight` | |
-| `lastModifiedDateTime` | `SystemModifiedAt` | read-only |
-
-### Item references (EAN / GTIN cross-references)
-
-{{< apimethod method="GET" path="/api/brightcom/brccore/v1.0/companies({id})/itemReferences" >}}
-
-| Field | BC field | Notes |
-|---|---|---|
-| `id` | `SystemId` | read-only |
-| `itemNumber` | `Item No.` | |
-| `variantCode` | `Variant Code` | |
-| `unitOfMeasure` | `Unit of Measure` | |
-| `referenceType` | `Reference Type` | option — e.g. Bar Code, Vendor |
-| `referenceTypeNo` | `Reference Type No.` | |
-| `referenceNo` | `Reference No.` | the actual EAN/GTIN/vendor code value |
-| `description` | `Description` | |
-| `description2` | `Description 2` | |
-
-{{% alert title="No lastModifiedDateTime on this endpoint" color="info" %}}
-Unlike the other Item sub-resources, `itemReferences` doesn't expose a `lastModifiedDateTime` field.
-{{% /alert %}}
-
-## BRC Connect extension fields
-
-Separate endpoint, joined to `items` above by `id`. All fields here are writable.
-
-{{< apimethod method="GET" path="/api/brightcom/brcconnect/v1.0/companies({id})/items" >}}
-{{< apimethod method="PATCH" path="/api/brightcom/brcconnect/v1.0/companies({id})/items({id})" >}}
-
-{{< apicols >}}
-{{< apicol side="left" >}}
-| Field | BC field | Notes |
-|---|---|---|
-| `id` | `SystemId` | read-only, same value as the Core `items` `id` |
-| `brcConEnabledWeb` | `BRC Enabled Web` | boolean |
-| `brcConBrand` | `BRC Brand` | |
-| `brcConItemParentNo` | `BRC Item Parent No.` | |
-| `brcConDangerousGoods` | `BRC Dangerous Goods` | boolean |
-| `brcConItemParentSorting` | `BRC Item Parent Sorting` | |
-| `lastModifiedDateTime` | `SystemModifiedAt` | read-only |
-{{< /apicol >}}
-{{< apicol side="right" >}}
-#### Response
+| Query parameter | Notes |
+|---|---|
+| `count` | Number of entries to retrieve. Default 100 if omitted. |
+| `acknowledge` | The `acknowledgeToken` from your previous batch — pass it to close that batch and advance the queue. |
+| `groupByParentPartNo` | Group entries by their parent part number. Only relevant if you're using BC's item parent list feature. |
 
 ```json
 {
-  "id": "8f14e45f-ceea-467e-b3b3-6b1e2e6e4a0a",
-  "brcConEnabledWeb": true,
-  "brcConBrand": "ALPINE",
-  "brcConItemParentNo": "",
-  "brcConDangerousGoods": false,
-  "brcConItemParentSorting": 10,
-  "lastModifiedDateTime": "2026-08-20T09:12:31Z"
+  "count": 1,
+  "acknowledgeToken": "8f14e45f-ceea-467e-b3b3-6b1e2e6e4a0a",
+  "nextLink": "/item?acknowledge=8f14e45f-ceea-467e-b3b3-6b1e2e6e4a0a",
+  "data": [
+    {
+      "externalId": "10023",
+      "class": "itemWithVariants",
+      "partNo": "10023",
+      "source": "example-pim",
+      "name": "Outdoor Scarf",
+      "brand": "EXAMPLE",
+      "status": "Published",
+      "extendedInfo": []
+    }
+  ]
 }
 ```
-{{< /apicol >}}
-{{< /apicols >}}
-
-## Extended Info
-
-Item and Item Variant messages also carry `extendedInfo` — BRC Connect's mechanism for flexible, source-specific attributes, independently at both the item and variant level. See the dedicated [Extended Info](extended-info/) page for the full explanation, field reference, and supported data types.

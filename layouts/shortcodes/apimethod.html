@@ -1,10 +1,18 @@
 {{/*
   BrightCom Docs — HTTP method + path badge for API reference pages.
-  Usage: {{< apimethod method="GET" path="/api/brightcom/brccore/v1.0/companies({id})/items" >}}
+  `path` is relative to params.gateway_base_url (single source of truth
+  in hugo.yaml) unless it's already an absolute URL.
+  Usage: {{< apimethod method="GET" path="item" >}}
+      -> GET https://onbrightcom.com/gateway/v1/item
 */}}
 {{- $method := .Get "method" | default "GET" | upper -}}
 {{- $path := .Get "path" | default "" -}}
+{{- $fullPath := $path -}}
+{{- if not (or (strings.HasPrefix $path "http://") (strings.HasPrefix $path "https://")) -}}
+  {{- $base := .Site.Params.gateway_base_url | default "" -}}
+  {{- $fullPath = printf "%s/%s" (strings.TrimSuffix "/" $base) (strings.TrimPrefix "/" $path) -}}
+{{- end -}}
 <div class="bc-api-endpoint">
   <span class="bc-api-badge bc-api-badge--{{ $method | lower }}">{{ $method }}</span>
-  <code class="bc-api-path">{{ $path }}</code>
+  <code class="bc-api-path">{{ $fullPath }}</code>
 </div>

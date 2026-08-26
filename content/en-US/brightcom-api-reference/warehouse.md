@@ -3,100 +3,123 @@ title: "Warehouse"
 linkTitle: "Warehouse"
 weight: 30
 description: >
-  Location master data, plus BRC Connect's location-filter and web-enablement fields.
+  Stock levels and movements per warehouse — absolute quantities, deltas, and planning/history data.
 ---
 
-{{% alert title="Location master data, not stock levels" color="warning" %}}
-The REST endpoint below is Business Central **Location** master data — code, name, address. It cannot answer "how much of item X is available at location Y." Stock quantities travel separately, in BRC Connect's outbound warehouse stock message — see [Extended Info](#extended-info) below. There is no REST GET endpoint for stock levels; if you need to query them on demand rather than receive them as messages, ask BrightCom Solutions first.
-{{% /alert %}}
+Inventory levels and stock movements per warehouse, item, and variant — as absolute quantities and/or delta adjustments, optionally with incoming quantity, next delivery date, and forward planning / historical consumption data.
 
-## Location
+## Add warehouse entries to the queue
 
-{{< apimethod method="GET" path="/api/brightcom/brccore/v1.0/companies({id})/locations" >}}
-{{< apimethod method="PATCH" path="/api/brightcom/brccore/v1.0/companies({id})/locations({id})" >}}
+{{< apimethod method="POST" path="/warehouse" >}}
+
+Accepts a JSON array of warehouse entries.
 
 {{< apicols >}}
 {{< apicol side="left" >}}
-| Field | BC field | Notes |
+| Field | Type | Notes |
 |---|---|---|
-| `id` | `SystemId` | read-only |
-| `code` | `Code` | |
-| `displayName` | `Name` | |
-| `addressLine1` | `Address` | |
-| `addressLine2` | `Address 2` | |
-| `city` | `City` | |
-| `state` | `County` | JSON name is `state`, BC field is `County` |
-| `postalCode` | `Post Code` | |
-| `countryRegionCode` | `Country/Region Code` | |
-| `phoneNumber` | `Phone No.` | |
-| `contact` | `Contact` | |
-| `lastModifiedDateTime` | `SystemModifiedAt` | read-only |
+| `id` | string (GUID) | |
+| `externalId` | string | |
+| `checksum` | string | |
+| `warehouseExternalId` | string | |
+| `sourceWarehouseExternalId` | string | For transfer-type movements |
+| `destinationWarehouseExternalId` | string | For transfer-type movements |
+| `messageType` | string | |
+| `comment` | string | |
+| `source` | string | |
+| `partNo` | string | |
+| `variantCode` | string | |
+| `quantity` | number | Absolute quantity |
+| `deltaQuantity` | number | Adjustment relative to the last known quantity |
+| `created` | datetime | |
+| `incomingQuantity` | number | |
+| `nextDelivery` | datetime | |
+| `reasonCode` | string | |
+| `transactionId` | string | |
+| `name` | string | |
+| `extendedInfo` | array | See [Extended Info](../extended-info/) |
+| `type` | string | |
+| `period` | string | |
+| `planning` | array of object | See [Planning](#planning) below |
+| `history` | array of object | See [History](#history) below |
+| `productRanges` | array | Channel/assortment flags |
 {{< /apicol >}}
 {{< apicol side="right" >}}
 #### Request
 
 ```json
-{
-  "displayName": "Main Warehouse Stockholm",
-  "phoneNumber": "+46 8 555 0110"
-}
+[
+  {
+    "externalId": "MAIN-10023-050-ONE",
+    "warehouseExternalId": "MAIN",
+    "source": "example-erp",
+    "partNo": "10023",
+    "variantCode": "050-ONE",
+    "quantity": 42,
+    "deltaQuantity": -3,
+    "created": "2026-08-26T08:00:00Z",
+    "incomingQuantity": 100,
+    "nextDelivery": "2026-09-05T00:00:00Z",
+    "extendedInfo": []
+  }
+]
 ```
 
 #### Response
 
-```json
-{
-  "id": "6c2e9a4d-1a3b-4f60-9e0c-2d7a5f8b3c11",
-  "code": "MAIN",
-  "displayName": "Main Warehouse Stockholm",
-  "addressLine1": "Lagervägen 12",
-  "addressLine2": "",
-  "city": "Stockholm",
-  "state": "",
-  "postalCode": "121 34",
-  "countryRegionCode": "SE",
-  "phoneNumber": "+46 8 555 0110",
-  "contact": "Warehouse Office",
-  "lastModifiedDateTime": "2026-07-02T11:05:44Z"
-}
+```
+201 Created
+"1 warehouse entr(y/ies) queued"
 ```
 {{< /apicol >}}
 {{< /apicols >}}
 
-## BRC Connect extension fields
+### Planning
 
-Separate endpoint, joined to `locations` above by `id`. All fields here are writable.
+| Field | Type |
+|---|---|
+| `startPeriod` | datetime |
+| `endPeriod` | datetime |
+| `quantityPhysical` | number |
+| `scheduledReceipt` | number |
+| `grossRequirement` | number |
+| `quantity` | number |
 
-{{< apimethod method="GET" path="/api/brightcom/brcconnect/v1.0/companies({id})/locations" >}}
-{{< apimethod method="PATCH" path="/api/brightcom/brcconnect/v1.0/companies({id})/locations({id})" >}}
+### History
 
-{{< apicols >}}
-{{< apicol side="left" >}}
-| Field | BC field | Notes |
-|---|---|---|
-| `id` | `SystemId` | read-only, same value as the Core location's `id` |
-| `brcConEnabledWeb` | `BRC Enabled Web` | boolean |
-| `brcConLocationFilter` | `BRC Location Filter` | |
-| `lastModifiedDateTime` | `SystemModifiedAt` | read-only |
-{{< /apicol >}}
-{{< apicol side="right" >}}
-#### Response
+| Field | Type |
+|---|---|
+| `periodStart` | datetime |
+| `periodEnd` | datetime |
+| `periodStartInventory` | number |
+| `purchases` | number |
+| `sales` | number |
+| `other` | number |
+| `periodEndInventory` | number |
+
+## Retrieve warehouse entries from the queue
+
+{{< apimethod method="GET" path="/warehouse" >}}
+
+| Query parameter | Notes |
+|---|---|
+| `count` | Number of entries to retrieve. Default 100 if omitted. |
+| `acknowledge` | The `acknowledgeToken` from your previous batch — pass it to close that batch and advance the queue. |
 
 ```json
 {
-  "id": "6c2e9a4d-1a3b-4f60-9e0c-2d7a5f8b3c11",
-  "brcConEnabledWeb": true,
-  "brcConLocationFilter": "MAIN|WEB",
-  "lastModifiedDateTime": "2026-07-02T11:05:44Z"
+  "count": 1,
+  "acknowledgeToken": "6c2e9a4d-1a3b-4f60-9e0c-2d7a5f8b3c11",
+  "nextLink": "/warehouse?acknowledge=6c2e9a4d-1a3b-4f60-9e0c-2d7a5f8b3c11",
+  "data": [
+    {
+      "externalId": "MAIN-10023-050-ONE",
+      "warehouseExternalId": "MAIN",
+      "partNo": "10023",
+      "variantCode": "050-ONE",
+      "quantity": 42,
+      "extendedInfo": []
+    }
+  ]
 }
 ```
-{{< /apicol >}}
-{{< /apicols >}}
-
-## Extended Info
-
-The outbound warehouse stock message also carries `extendedInfo`, at a single flat level (one array per stock message) — this message is also where actual stock quantities travel, since the REST endpoint above never carries them. See the dedicated [Extended Info](extended-info/) page for the full explanation, field reference, and supported data types.
-
-## Permissions
-
-Location access is granted through the **Reference** permission sets (`BRC API Ref READ` / `WRITE`), bundled together with unrelated reference data such as currencies, payment terms, and posting groups — there is no Warehouse-specific permission set.

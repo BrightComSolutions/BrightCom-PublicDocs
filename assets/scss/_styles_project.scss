@@ -1428,6 +1428,7 @@ h1, h2, h3, h4, h5, h6,
   .bc-product-grid--auto {
     display: flex !important;
     flex-wrap: wrap;
+    justify-content: center;
     gap: 16px;
     background: transparent;
     border: 0;
@@ -1435,7 +1436,8 @@ h1, h2, h3, h4, h5, h6,
     overflow: visible;
 
     > .bc-product-card {
-      flex: 0 1 300px;
+      flex: 1 1 300px;
+      max-width: 340px;
       border: 1px solid var(--rule);
       border-radius: var(--radius-lg);
     }
@@ -1460,14 +1462,20 @@ h1, h2, h3, h4, h5, h6,
   text-transform: uppercase;
   padding: 3px 10px;
   border-radius: var(--radius-sm);
-  color: var(--white);
   flex: none;
 }
-.bc-api-badge--get    { background: var(--ok); }
-.bc-api-badge--post   { background: var(--accent-ink); }
-.bc-api-badge--patch  { background: var(--warn); }
-.bc-api-badge--put    { background: var(--warn); }
-.bc-api-badge--delete { background: var(--danger); }
+/*
+  Badge backgrounds (--ok/--accent-ink/--warn/--danger) don't have
+  [data-theme="dark"] overrides, so they're fixed colors regardless of
+  site theme — the text color must be a fixed value tuned per background
+  too, not var(--white) (which flips to near-black in dark mode and
+  fails contrast against every one of these).
+*/
+.bc-api-badge--get    { background: var(--ok);         color: #FFFFFF; }
+.bc-api-badge--post   { background: var(--accent-ink); color: #FFFFFF; }
+.bc-api-badge--patch  { background: var(--warn);       color: #1A1200; }
+.bc-api-badge--put    { background: var(--warn);       color: #1A1200; }
+.bc-api-badge--delete { background: var(--danger);     color: #FFFFFF; }
 .bc-api-path {
   font-family: var(--font-mono);
   font-size: 13.5px;
@@ -1502,12 +1510,15 @@ h1, h2, h3, h4, h5, h6,
     margin: 20px 0 8px;
   }
   h4:first-child { margin-top: 0; }
+  /* This panel is deliberately dark in both themes, so its text must be
+     a fixed light color too — var(--paper) would flip to near-black in
+     dark mode and read as invisible against the (also dark) background. */
   pre {
     background: var(--ink);
     border-radius: var(--radius);
     padding: 16px;
   }
-  code { color: var(--paper); }
+  code { color: #F7F5F2; }
 }
 [data-theme="dark"] .bc-api-col--right pre { background: var(--paper-2); border: 1px solid var(--rule); }
 

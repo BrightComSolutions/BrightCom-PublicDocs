@@ -82,6 +82,11 @@ outputs:
   section: [HTML, RSS]
 
 params:
+  # Single source of truth for the Gateway API base URL — used by the
+  # apimethod shortcode so it's never hand-typed per endpoint.
+  gateway_base_url: "https://onbrightcom.com/gateway/v1"
+  gateway_base_url_qa: "https://qa.onbrightcom.com/gateway/v1"
+
   taxonomy:
     # set taxonomyCloud = [] to hide taxonomy clouds
     taxonomyCloud: [tags, categories]

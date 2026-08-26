@@ -1,0 +1,22 @@
+# BrightCom Docs
+
+> Documentation for BrightCom Solutions' Business Central apps and integrations (BRC Core, BRC Connect, BRC Retail, BRC Risk, and others).
+
+## API Reference
+
+- [BrightCom API Reference](https://dev.brightcom.se/brightcom-api-reference/): REST API reference for BRC Connect — overview, architecture, and permission sets. Covers normal Business Central fields plus BRC Connect's extension fields per resource.
+- [Item API](https://dev.brightcom.se/brightcom-api-reference/item/): Item master data, variants, units of measure, and cross-references (EAN/GTIN), plus BRC Connect's brand and web-enablement fields.
+- [Customer API](https://dev.brightcom.se/brightcom-api-reference/customer/): Customer master data and ship-to addresses, plus BRC Connect's web number, price list, and credit limit fields.
+- [Price API](https://dev.brightcom.se/brightcom-api-reference/price/): Price list headers and lines, plus BRC Connect's campaign and web-enablement fields.
+- [Warehouse API](https://dev.brightcom.se/brightcom-api-reference/warehouse/): Location master data, plus BRC Connect's location-filter and web-enablement fields.
+- [Order API](https://dev.brightcom.se/brightcom-api-reference/order/): Sales order headers and lines, plus BRC Connect's shipping, cancellation, and status fields.
+- [Shipment API](https://dev.brightcom.se/brightcom-api-reference/shipment/): Posted sales shipment headers and lines, plus BRC Connect's read-only shipping extension fields.
+- [Extended Info](https://dev.brightcom.se/brightcom-api-reference/extended-info/): The typed, config-driven mechanism used across every message flow to carry source-specific attributes without a dedicated field.
+- [BRC Core API Reference](https://dev.brightcom.se/brc-core/reference/api-reference/): Integration points, events, and extension capabilities for BRC Core.
+- [BRC Retail API Reference](https://dev.brightcom.se/brc-retail/reference/api-reference/): Inventory, catalog, pricing, and sales integration endpoints for BRC Retail Extension.
+- [BRC Risk API Reference](https://dev.brightcom.se/brc-risk/reference/api-reference/): External provider and internal Business Central APIs for risk data.
+
+## Products
+
+- [BrightCom Apps](https://dev.brightcom.se/apps/): Overview of all BrightCom Business Central apps.
+- [Release Notes](https://dev.brightcom.se/releases/): Latest updates and releases for BrightCom apps.

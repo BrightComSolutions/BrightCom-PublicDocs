@@ -58,6 +58,7 @@ Each entry is a typed key/value pair. `valueType` determines which of three type
 | Flow | Level(s) | Notes |
 |---|---|---|
 | [Item](item/) | Item (style) **and** Item Variant, independently | Richest example — see below |
+| [Customer](customer/) | Customer **and** each entry in its `contacts` array | Customer also carries a separate `shipToAddresses` array, unrelated to `extendedInfo` |
 | [Price](price/) | Single, flat — one array per price row | Same shape whether the sending environment uses the legacy Sales Price table or the modern Price List Line |
 | [Warehouse](warehouse/) | Single, flat — one array per stock message | This message is also where actual stock quantities travel; the REST Location endpoint never carries them |
 | [Order](order/) | Header **and** each line | Also works inbound — your integration can send its own `extendedInfo` codes when creating an order |

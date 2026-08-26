@@ -3,7 +3,7 @@ title: "BrightCom API Reference"
 linkTitle: "BrightCom API Reference"
 menu: {main: {weight: 36}}
 description: >
-  REST API reference for BRC Connect — Item, Price, Warehouse, Order, and Shipment endpoints, built on the standard Business Central API stack.
+  REST API reference for BRC Connect — Item, Customer, Price, Warehouse, Order, and Shipment endpoints, built on the standard Business Central API stack.
 ---
 
 ## Overview
@@ -13,18 +13,17 @@ BRC Connect's REST API surface is built on two Business Central apps working tog
 - **BRC Core** exposes the standard, "normal" fields for each resource — item number, description, price, quantity, and so on — via its own API pages.
 - **BRC Connect** exposes only its own additional fields (all prefixed `brcCon*` — brand, web flags, shipping extras, and similar) on a **separate** set of endpoints under the same resource name, joined to BRC Core's records by `id`. There is no server-side merge of the two.
 
-In practice, an integration reading "the Item API" queries **two** endpoints and joins the results on `id`:
+In practice, an integration reading "the Item API" queries **two** endpoints and joins the results on `id`.
 
-```http
-GET /api/brightcom/brccore/v1.0/companies({id})/items
-GET /api/brightcom/brcconnect/v1.0/companies({id})/items
-```
-
-This reference covers five resources — the normal Business Central fields plus the BRC Connect extension fields for each:
+This reference covers six resources — the normal Business Central fields plus the BRC Connect extension fields for each:
 
 {{< cardpane >}}
 {{< card header="**Item**" title="Products & variants" url="/brightcom-api-reference/item/" >}}
 Item master data, variants, units of measure, and cross-references (EAN/GTIN), plus BRC Connect's brand and web-enablement fields.
+{{< /card >}}
+
+{{< card header="**Customer**" title="Customers & ship-to addresses" url="/brightcom-api-reference/customer/" >}}
+Customer master data and ship-to addresses, plus BRC Connect's web number, price list, and credit limit fields.
 {{< /card >}}
 
 {{< card header="**Price**" title="Price lists" url="/brightcom-api-reference/price/" >}}
@@ -79,6 +78,7 @@ Access is granted through Business Central permission sets, grouped by functiona
 | Permission set | Covers |
 |---|---|
 | `BRC API Item READ` / `WRITE` | Item, Item Variant, Item UoM, Item Reference |
+| `BRC API Cust READ` / `WRITE` | Customer, Customer Ship-To Address |
 | `BRC API Price READ` / `WRITE` | Price List Header, Price List Line |
 | `BRC API Ref READ` / `WRITE` | Location (Warehouse), plus unrelated reference data (currencies, payment terms, posting groups, etc.) |
 | `BRC API Sales READ` / `WRITE` | Sales Order, Sales Order Line |

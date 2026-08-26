@@ -1414,6 +1414,32 @@ h1, h2, h3, h4, h5, h6,
   h2:first-of-type { border-top: 0; padding-top: 4px; margin-top: 0; }
   h3 { margin-top: 40px; }
   h4 { margin-top: 0; }
+
+  /* Card grids on this page can end on a partial row (e.g. 7 cards).
+     CSS grid reserves every column track for every row once earlier
+     rows fill them, so a short last row still shows empty var(--rule)
+     boxes — auto-fit/auto-fill make no difference there. Flexbox avoids
+     the reserved-track problem, but letting a lone trailing card grow
+     to fill the row just trades one visual bug for another (it balloons
+     to full width). Fix: fixed card width (no grow), and drop the
+     container's "background peeks through the gap" hairline trick in
+     favor of a per-card border — so leftover space in a short row is
+     just page background, not a colored box either way. */
+  .bc-product-grid--auto {
+    display: flex !important;
+    flex-wrap: wrap;
+    gap: 16px;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    overflow: visible;
+
+    > .bc-product-card {
+      flex: 0 1 300px;
+      border: 1px solid var(--rule);
+      border-radius: var(--radius-lg);
+    }
+  }
 }
 @media (max-width: 767.98px) {
   .bc-api-article { padding: 20px 20px 80px; }

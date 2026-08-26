@@ -1,0 +1,8 @@
+{{/*
+  BrightCom Docs — one column inside {{< apicols >}}.
+  side = left (prose/fields, default) | right (sticky code panel)
+*/}}
+{{- $side := .Get "side" | default "left" -}}
+<div class="bc-api-col bc-api-col--{{ $side }}">
+{{ .Inner | .Page.RenderString }}
+</div>

@@ -1,0 +1,18 @@
+{{/*
+  BrightCom Docs — one BRCConnect API Reference resource page
+  (Item / Price / Warehouse / Order / Shipment). Same wide shell as
+  list.html, plus a breadcrumb back to the reference index.
+*/}}
+{{ define "main" }}
+{{- $parent := .Parent -}}
+<article class="bc-api-article td-content">
+  <nav aria-label="breadcrumb" class="td-breadcrumbs">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="{{ "" | relLangURL }}">{{ T "ui_home" | default "Docs" }}</a></li>
+      {{ with $parent }}<li class="breadcrumb-item"><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>{{ end }}
+      <li class="breadcrumb-item active" aria-current="page">{{ .Title }}</li>
+    </ol>
+  </nav>
+  {{ .Content }}
+</article>
+{{ end }}

@@ -1,0 +1,10 @@
+{{/*
+  BrightCom Docs — HTTP method + path badge for API reference pages.
+  Usage: {{< apimethod method="GET" path="/api/brightcom/brccore/v1.0/companies({id})/items" >}}
+*/}}
+{{- $method := .Get "method" | default "GET" | upper -}}
+{{- $path := .Get "path" | default "" -}}
+<div class="bc-api-endpoint">
+  <span class="bc-api-badge bc-api-badge--{{ $method | lower }}">{{ $method }}</span>
+  <code class="bc-api-path">{{ $path }}</code>
+</div>

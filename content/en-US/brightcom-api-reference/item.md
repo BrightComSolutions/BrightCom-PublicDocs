@@ -6,11 +6,15 @@ description: >
   Item, variant, and parent-grouping messages — non-variant items, BC-level variants, and virtual parent groupings.
 ---
 
-An item message can represent one of three shapes, distinguished by `class`:
+An item message can represent one of three conceptual shapes:
 
-- **Non-Variant Item (`nonVariantItem`)** — has no variations, sold as-is.
-- **Item with Variants (`itemWithVariants`)** — has variants in BC, sold at the variant level.
-- **Item with Parent (`itemWithParent`)** — structurally an item in BC (like a non-variant item), but has a virtual parent that doesn't exist as an item in BC. Used to let external systems group these as if they were variants of a common parent.
+- **Non-Variant Item** — has no variations, sold as-is.
+- **Item with Variants** — has variants in BC, sold at the variant level. Populate `variants`.
+- **Item with Parent** — structurally an item in BC (like a non-variant item), but has a virtual parent that doesn't exist as an item in BC. Used to let external systems group these as if they were variants of a common parent. Populate `parentPartNo`.
+
+{{% alert title="Not a field you set" color="info" %}}
+This classification is conceptual, not a literal field on the wire — there's a `class` property internally, but it's excluded from JSON entirely (confirmed via the shipped model: it carries a `[JsonIgnore]` attribute). Which shape you're sending is determined by which of the fields above you populate, not by declaring a type.
+{{% /alert %}}
 
 ### Queue semantics
 
@@ -28,8 +32,7 @@ Accepts a JSON array of item entries.
 |---|---|---|
 | `id` | string (GUID) | |
 | `externalId` | string | Your system's identifier for this item |
-| `class` | string | `unclassified` / `nonVariantItem` / `itemWithVariants` / `itemWithParent` / `hasBom` |
-| `parentPartNo` | string | For `itemWithParent` |
+| `parentPartNo` | string | For an item-with-parent — see the shapes above |
 | `parentName` | string | |
 | `partNo` | string | The item number |
 | `source` | string | Origin of the message |
@@ -69,7 +72,6 @@ Accepts a JSON array of item entries.
 [
   {
     "externalId": "10023",
-    "class": "itemWithVariants",
     "partNo": "10023",
     "source": "example-pim",
     "name": "Outdoor Scarf",
@@ -111,7 +113,6 @@ Accepts a JSON array of item entries.
   "data": [
     {
       "externalId": "10023",
-      "class": "itemWithVariants",
       "partNo": "10023",
       "source": "example-pim",
       "name": "Outdoor Scarf",

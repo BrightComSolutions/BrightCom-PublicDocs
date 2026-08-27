@@ -29,6 +29,10 @@ Queues are configured per target: which source's updates go to which queue is se
 When an already-delivered entry needs correcting, the Gateway doesn't edit it in place — it appends a new copy to the end of the queue instead, to avoid disturbing the acknowledge watermark. That means the same logical record can arrive more than once. Match incoming entries on your own key (e.g. `externalId`) and treat a repeat as an update, not a new record — don't assume delivery is exactly-once.
 {{% /alert %}}
 
+## Authentication
+
+Every endpoint requires a **Bearer API key** — the documentation UI itself is publicly viewable, but the endpoints behind it are not. Contact BrightCom Solutions to get a key issued; the exact provisioning process isn't part of this reference yet.
+
 This reference covers six resources:
 
 {{< cardpane >}}
@@ -63,7 +67,7 @@ The typed, config-driven mechanism used to extend every message beyond its base 
 
 ## What's not covered yet
 
-- **Authentication** — request gating happens in tenant-resolution middleware backed by an external package outside this reference's source access. Don't guess at a header name; ask BrightCom Solutions for the current mechanism before building against it.
+- **Exact auth setup details** — every endpoint requires a Bearer API key (see [Authentication](#authentication) below), but the specific process for obtaining a key and the tenant-resolution details aren't part of this reference yet — ask BrightCom Solutions.
 - **Item cross-references, structure (BOM), suppliers, and units of measure** — these exist on the Item message but are only listed by name here, not expanded field-by-field yet.
 - **Operational endpoints** (dead-letter queue, configuration, mapping, admin/stats/tooling) — internal to BrightCom Solutions, not part of the integrator-facing surface documented here.
 - **Interactive try-it-out reference** — this version is documentation to read, not a live console.

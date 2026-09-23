@@ -32,6 +32,8 @@ The entries are reachable from the **Error Try Count** field on a warehouse tran
 
 This makes a recurring failure diagnosable from inside Business Central rather than from the previous run's error text alone.
 
+> **Note:** a defect in this version means only the first error per document line is recorded; a repeat failure on the same line reports a duplicate-key error instead of being added to the history. Fixed in 25.0.34865.0.
+
 ---
 
 ### Skip old items in the inventory balance load (#18451)

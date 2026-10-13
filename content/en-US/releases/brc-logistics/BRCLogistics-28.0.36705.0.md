@@ -1,7 +1,7 @@
 ---
-title: BRCLogistics 28.0.36655.0
+title: BRCLogistics 28.0.36705.0
 categories: [BRCLogistics, ReleaseNotes]
-description: Fixes Ongoing, VeraCore and Logiwa requests being sent without the real password, adds Test Connection to the setup card, and recovers EasyCom exchange orders that were never created.
+description: Fixes Ongoing, VeraCore and Logiwa requests being sent without the real password, adds Test Connection to the setup card, recovers EasyCom exchange orders that were never created, and fixes Ongoing status updates missed when pagination is enabled.
 date: 2026-10-13
 ---
 
@@ -14,6 +14,7 @@ This release fixes an issue introduced in 28.0.36303.0. Customers using the Ongo
 | WMS password sent correctly again | Ongoing, VeraCore and Logiwa requests created with 28.0.36303.0 were sent with a masked placeholder instead of the password, so the warehouse system rejected them. They are now sent with the real password. | 31545 |
 | Test Connection | A new action on the BRC Logi Setup card checks that the warehouse system accepts the configured credentials, without creating or changing anything there. | 32017 |
 | Recovery of missing exchange orders | A new job queue routine creates exchange orders that were never created for closed returns. Excluded exchange lines in EasyCom no longer close the return. | 30325 |
+| Ongoing status updates with pagination | With Ongoing pagination enabled, Shipment and Receival Status Requests no longer miss status changes on orders below the page cursor. | 32025 |
 
 ## Detailed Feature Information
 
@@ -83,6 +84,23 @@ A new job queue routine finds closed returns that have exchange lines but no exc
 
 - PR 16130 (BRCLogistics): #30325 Recover missing exchange orders and keep exchange lines open in EasyCom
 
+---
+
+### Ongoing status updates with pagination (#32025)
+
+With Ongoing pagination enabled (**Ong Order Page Size** or **Ong InOrder Page Size** above 0), Shipment and Receival Status Requests could permanently miss status updates:
+
+- A completed run moved the "changed since" time forward to the time of its last page. An order whose status changed while the run was paging, on a page already read, was then never picked up.
+- A page whose processing failed, even weeks earlier, made every later run start at that page's order ID, so orders with a lower ID were skipped.
+
+Now a completed paginated run moves the "changed since" time forward to when the run started, and a run only resumes from the most recent run's last page. Requests without pagination are unchanged.
+
+**After installing:** the first Shipment and Receival Status Request run starts over from the first page once and reads the current window again. Some orders are processed again; nothing is lost.
+
+#### Related PR
+
+- PR 16153 (BRCLogistics): #32025 Ongoing pagination: advance the watermark to the run start, resume only the latest run
+
 ## Breaking Changes
 
 No breaking changes in this release.
@@ -96,3 +114,4 @@ Behaviour changes to be aware of:
 
 - Ongoing, VeraCore and Logiwa requests are rejected by the warehouse system because the password placeholder is sent instead of the password (#31545)
 - Exchange orders are silently not created when the return flow fails (#30325)
+- Ongoing Shipment and Receival Status Requests miss status changes when pagination is enabled (#32025)
